@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estante Estratégica</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e1e24">
+</head>
+<body>
+  <header>
+    <h1>Estante Estratégica</h1>
+    <p>Hub de Inteligência & Fontes de Alto Nível</p>
+  </header>
+
+  <main class="bookshelf">
+    <!-- Seção Concursos & Direito -->
+    <section class="shelf">
+      <h2>Concursos & Legislação</h2>
+      <div class="cards-container">
+        <a href="https://www.concurseria.com.br" target="_blank" class="card">
+          <div class="card-icon">📚</div>
+          <div class="card-title">DOD Comentado</div>
+        </a>
+        <a href="https://www.planalto.gov.br" target="_blank" class="card">
+          <div class="card-icon">⚖️</div>
+          <div class="card-title">Planalto Legislação</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Seção Geopolítica & Economia -->
+    <section class="shelf">
+      <h2>Geopolítica & Economia</h2>
+      <div class="cards-container">
+        <a href="https://www.bloomberg.com" target="_blank" class="card">
+          <div class="card-icon">📈</div>
+          <div class="card-title">Bloomberg</div>
+        </a>
+        <a href="https://www.ft.com" target="_blank" class="card">
+          <div class="card-icon">🌐</div>
+          <div class="card-title">Financial Times</div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
