@@ -1,0 +1,17 @@
+{
+  "name": "Estante Estratégica",
+  "short_name": "Estante",
+  "description": "Hub de inteligência e fontes de informação de alto nível.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121214",
+  "theme_color": "#121214",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3389/3389081.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
