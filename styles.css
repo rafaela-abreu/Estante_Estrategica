@@ -2,14 +2,58 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
+  background-color: #121214;
   color: #e1e1e6;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   padding: 15px;
   min-height: 100vh;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
+}
+
+/* Vídeo do Topo */
+.video-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 15px auto;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  border: 1px solid #29292e;
+}
+
+.video-container video {
+  width: 100%;
+  display: block;
+}
+
+#soundBtn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(18, 18, 20, 0.85);
+  color: #00b37e;
+  border: 1px solid #00b37e;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+#soundBtn:hover {
+  background: rgba(32, 32, 36, 0.9);
+}
+
+#soundBtn.sound-on {
+  background: #00b37e;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 179, 126, 0.5);
 }
 
 header {
@@ -20,35 +64,122 @@ header {
 header h1 {
   font-size: 1.8rem;
   color: #00b37e;
+  margin-bottom: 5px;
 }
 
 header p {
+  font-size: 0.9rem;
+  color: #a8a8b3;
+  margin-bottom: 15px;
+}
+
+/* Progresso Diário */
+.progress-bar-container {
+  background-color: #202024;
+  border: 1px solid #29292e;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+#progressText {
   font-size: 0.85rem;
   color: #a8a8b3;
-  margin-bottom: 12px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.progress-track {
+  background-color: #121214;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background-color: #00b37e;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Pesquisa */
+.search-container {
+  margin-bottom: 15px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 10px;
+  background-color: #202024;
+  border: 1px solid #29292e;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.9rem;
 }
 
 #configBtn {
-  background-color: #29292e;
-  color: #00b37e;
-  border: 1px solid #00b37e;
+  background-color: transparent;
+  color: #a8a8b3;
+  border: 1px solid #29292e;
   padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
 }
 
+#configBtn:hover {
+  background-color: #202024;
+  color: #fff;
+}
+
+/* Painel de Configurações */
 .config-panel {
   background-color: #202024;
   border: 1px solid #29292e;
-  border-radius: 12px;
   padding: 15px;
-  max-width: 500px;
-  margin: 0 auto 20px auto;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
 .config-panel.hidden {
   display: none;
+}
+
+.config-panel h3 {
+  font-size: 1.1rem;
+  color: #00b37e;
+  margin-bottom: 12px;
+}
+
+.config-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.config-group label {
+  font-size: 0.85rem;
+  color: #a8a8b3;
+}
+
+.config-group input[type="text"],
+.config-group input[type="url"],
+.config-group select {
+  padding: 8px;
+  background-color: #121214;
+  border: 1px solid #29292e;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.config-group input[type="color"] {
+  border: none;
+  width: 40px;
+  height: 30px;
+  cursor: pointer;
+  background: transparent;
 }
 
 .divider {
@@ -58,82 +189,86 @@ header p {
   margin: 15px 0;
 }
 
-.config-group {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-}
-
-.config-group input[type="text"],
-.config-group select {
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #29292e;
-  background: #121214;
-  color: #fff;
-}
-
-#shortcutForm {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#shortcutForm input {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #29292e;
-  background-color: #121214;
-  color: #fff;
-}
-
+/* Formulário */
 .form-buttons {
   display: flex;
   gap: 10px;
+  margin-top: 10px;
 }
 
 .btn-primary {
-  flex: 1;
   background-color: #00b37e;
   color: #fff;
   border: none;
-  padding: 10px;
-  border-radius: 6px;
+  padding: 10px 15px;
+  border-radius: 4px;
   font-weight: bold;
+  cursor: pointer;
+  flex: 1;
 }
 
 .btn-secondary {
-  background-color: #e25858;
+  background-color: #29292e;
   color: #fff;
   border: none;
-  padding: 10px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .btn-secondary.hidden {
   display: none;
 }
 
+/* Cartões da Estante */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
 }
 
 .card {
-  border: 1px solid #29292e;
+  background-color: #202024;
   padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  transition: transform 0.2s, opacity 0.2s;
+  border: 1px solid #29292e;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card-read {
+  opacity: 0.6;
+}
+
+.card-header-status {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+}
+
+.read-badge {
+  background: transparent;
+  border: none;
+  color: #a8a8b3;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.read-badge.badge-active {
+  color: #00b37e;
+  font-weight: bold;
 }
 
 .card-link {
   text-decoration: none;
-  color: inherit;
+  color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -141,64 +276,40 @@ header p {
 }
 
 .card-img {
-  width: 65px;
-  height: 65px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .card-icon {
-  font-size: 2.2rem;
-  margin-bottom: 6px;
+  font-size: 2.5rem;
+  margin-bottom: 8px;
 }
 
 .card-title {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: bold;
   text-align: center;
+  word-break: break-word;
 }
 
 .card-controls {
-  margin-top: 8px;
   display: flex;
-  justify-content: space-between;
-  width: 100%;
-  border-top: 1px solid #29292e;
-  padding-top: 6px;
+  gap: 4px;
+  margin-top: 10px;
 }
 
 .card-controls button {
   background: transparent;
   border: none;
-  font-size: 0.85rem;
-  padding: 2px 4px;
-}
-
-/* Estilo do Botão de Música */
-.music-player-container {
-  margin: 10px 0 15px 0;
-  text-align: center;
-}
-
-#musicBtn {
-  background-color: #202024;
-  color: #00b37e;
-  border: 1px solid #00b37e;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  padding: 2px;
 }
 
-#musicBtn:hover {
-  background-color: #29292e;
-}
-
-#musicBtn.playing {
-  background-color: #00b37e;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(0, 179, 126, 0.4);
+.card-controls button:hover {
+  opacity: 1;
 }
