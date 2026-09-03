@@ -10,13 +10,35 @@
 </head>
 <body>
 
+  <div class="delivery-scene">
+    <div class="house-target">🏡</div>
+    <div class="bird-flyer">🦉</div>
+    <div class="newspaper-drop">🗞️</div>
+  </div>
+
   <header>
     <h1 id="appTitleText">Estante Estratégica</h1>
     <p id="appSubtitleText">Hub de Inteligência & Fontes Personalizadas</p>
+    
+    <div class="music-player-container">
+      <button id="musicBtn" onclick="toggleMusic()">🎵 Ouvir Música Ambiente</button>
+      <audio id="bgMusic" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3"></audio>
+    </div>
+
+    <div id="dailyProgress" class="progress-bar-container">
+      <span id="progressText">Leituras de hoje: 0 / 0</span>
+      <div class="progress-track">
+        <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <div class="search-container">
+      <input type="text" id="searchInput" oninput="filterShortcuts()" placeholder="🔍 Pesquisar atalho...">
+    </div>
+
     <button id="configBtn" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
   </header>
 
-  <!-- Painel de Personalização Completo -->
   <div id="configPanel" class="config-panel hidden">
     <h3>🎨 Aparência da Estante</h3>
     
@@ -46,6 +68,13 @@
 
     <hr class="divider">
 
+    <h3>💾 Backup dos Dados</h3>
+    <div class="config-group">
+      <button type="button" class="btn-primary" onclick="exportBackup()">📥 Baixar Backup (JSON)</button>
+    </div>
+
+    <hr class="divider">
+
     <h3 id="formTitle">➕ Adicionar / Editar Atalho</h3>
     <form id="shortcutForm" onsubmit="handleShortcutSubmit(event)">
       <input type="hidden" id="editIndex" value="-1">
@@ -64,13 +93,11 @@
     </form>
   </div>
 
-  <!-- Área Principal da Estante -->
   <main class="bookshelf">
     <div class="cards-container" id="cardsContainer"></div>
   </main>
 
   <script>
-    // Estado inicial do aplicativo
     let appSettings = JSON.parse(localStorage.getItem('estante_config')) || {
       title: 'Estante Estratégica',
       bg: '#121214',
@@ -79,15 +106,45 @@
     };
 
     let shortcuts = JSON.parse(localStorage.getItem('estante_shortcuts')) || [
-      { id: '1', title: 'DOD Comentado', url: 'https://www.concurseria.com.br', image: '', emoji: '📚' },
-      { id: '2', title: 'Planalto Legislação', url: 'https://www.planalto.gov.br', image: '', emoji: '⚖️' },
-      { id: '3', title: 'Bloomberg', url: 'https://www.bloomberg.com', image: '', emoji: '📈' },
-      { id: '4', title: 'Financial Times', url: 'https://www.ft.com', image: '', emoji: '🌐' }
+      { id: '1', title: 'DOD Comentado', url: 'https://www.concurseria.com.br', image: '', emoji: '📚', read: false },
+      { id: '2', title: 'Planalto Legislação', url: 'https://www.planalto.gov.br', image: '', emoji: '⚖️', read: false },
+      { id: '3', title: 'Bloomberg', url: 'https://www.bloomberg.com', image: '', emoji: '📈', read: false },
+      { id: '4', title: 'Financial Times', url: 'https://www.ft.com', image: '', emoji: '🌐', read: false }
     ];
 
     function init() {
+      checkDailyResetAt2AM();
       applySettings();
       renderShortcuts();
+    }
+
+    // Função para tocar e pausar a música
+    function toggleMusic() {
+      const music = document.getElementById('bgMusic');
+      const btn = document.getElementById('musicBtn');
+
+      if (music.paused) {
+        music.play();
+        btn.innerText = "⏸️ Pausar Música";
+        btn.classList.add("playing");
+      } else {
+        music.pause();
+        btn.innerText = "🎵 Ouvir Música Ambiente";
+        btn.classList.remove("playing");
+      }
+    }
+
+    // Reset automático diário definido às 02:00 AM
+    function checkDailyResetAt2AM() {
+      const now = new Date();
+      const operationalDate = new Date(now.getTime() - (2 * 60 * 60 * 1000)).toDateString();
+      const lastReset = localStorage.getItem('estante_last_reset');
+
+      if (lastReset !== operationalDate) {
+        shortcuts.forEach(item => item.read = false);
+        localStorage.setItem('estante_last_reset', operationalDate);
+        saveShortcuts();
+      }
     }
 
     function applySettings() {
@@ -135,11 +192,10 @@
       try {
         localStorage.setItem('estante_shortcuts', JSON.stringify(shortcuts));
       } catch (e) {
-        alert("A imagem selecionada é muito grande para o armazenamento do navegador. Tente uma foto menor.");
+        alert("A imagem selecionada é muito grande. Tente uma foto menor.");
       }
     }
 
-    // Compressão automática de imagem da galeria
     function compressImage(file, callback) {
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -147,7 +203,7 @@
         img.onload = function() {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          const maxDim = 200; // Redimensiona para foto de capa leve
+          const maxDim = 200;
           let width = img.width;
           let height = img.height;
 
@@ -172,13 +228,43 @@
       reader.readAsDataURL(file);
     }
 
-    function renderShortcuts() {
+    function markAsRead(index, e) {
+      if (e) e.stopPropagation();
+      shortcuts[index].read = true;
+      saveShortcuts();
+      renderShortcuts();
+    }
+
+    function toggleReadStatus(index, e) {
+      e.stopPropagation();
+      shortcuts[index].read = !shortcuts[index].read;
+      saveShortcuts();
+      renderShortcuts();
+    }
+
+    function updateProgressBar() {
+      const total = shortcuts.length;
+      const readCount = shortcuts.filter(s => s.read).length;
+      const percentage = total > 0 ? Math.round((readCount / total) * 100) : 0;
+
+      document.getElementById('progressText').innerText = `Leituras de hoje: ${readCount} / ${total} (${percentage}%)`;
+      document.getElementById('progressFill').style.width = `${percentage}%`;
+    }
+
+    function filterShortcuts() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      renderShortcuts(query);
+    }
+
+    function renderShortcuts(filter = '') {
       const container = document.getElementById('cardsContainer');
       container.innerHTML = '';
 
       shortcuts.forEach((item, index) => {
+        if (filter && !item.title.toLowerCase().includes(filter)) return;
+
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = `card ${item.read ? 'card-read' : ''}`;
         card.style.backgroundColor = appSettings.cardBg;
         card.style.borderRadius = appSettings.borderRadius;
 
@@ -186,8 +272,15 @@
           ? `<img src="${item.image}" class="card-img" alt="Capa">`
           : `<div class="card-icon">${item.emoji || '🌐'}</div>`;
 
+        const statusBadge = item.read 
+          ? `<button class="read-badge badge-active" onclick="toggleReadStatus(${index}, event)" title="Marcar como não lido">✅ Lido</button>`
+          : `<button class="read-badge" onclick="toggleReadStatus(${index}, event)" title="Marcar como lido">⚪ Pendente</button>`;
+
         card.innerHTML = `
-          <a href="${item.url}" target="_blank" class="card-link">
+          <div class="card-header-status">
+            ${statusBadge}
+          </div>
+          <a href="${item.url}" target="_blank" class="card-link" onclick="markAsRead(${index})">
             ${coverHtml}
             <span class="card-title">${item.title}</span>
           </a>
@@ -201,6 +294,8 @@
 
         container.appendChild(card);
       });
+
+      updateProgressBar();
     }
 
     function handleShortcutSubmit(e) {
@@ -217,6 +312,7 @@
           title: title,
           url: url,
           emoji: emoji,
+          read: editIdx >= 0 ? shortcuts[editIdx].read : false,
           image: imageData !== null ? imageData : (editIdx >= 0 ? shortcuts[editIdx].image : '')
         };
 
@@ -250,7 +346,6 @@
       document.getElementById('saveBtn').innerText = 'Atualizar Atalho';
       document.getElementById('cancelBtn').classList.remove('hidden');
       
-      // Abre o painel se estiver fechado
       document.getElementById('configPanel').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -283,7 +378,21 @@
       document.getElementById('cancelBtn').classList.add('hidden');
     }
 
+    function exportBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+        config: appSettings,
+        shortcuts: shortcuts
+      }));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "estante_estrategica_backup.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
     window.onload = init;
   </script>
 </body>
-</html>
+  </html>
+  
