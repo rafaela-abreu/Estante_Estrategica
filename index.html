@@ -10,21 +10,20 @@
 </head>
 <body>
 
-  <div class="delivery-scene">
-    <div class="house-target">🏡</div>
-    <div class="bird-flyer">🦉</div>
-    <div class="newspaper-drop">🗞️</div>
+  <!-- Vídeo da Coruja no Topo com controle de som -->
+  <div class="video-container">
+    <video id="owlVideo" loop playsinline muted autoplay>
+      <source src="coruja.mp4" type="video/mp4">
+      Seu navegador não suporta a exibição deste vídeo.
+    </video>
+    <button id="soundBtn" onclick="toggleVideoSound()">🔇 Ativar Som</button>
   </div>
 
   <header>
     <h1 id="appTitleText">Estante Estratégica</h1>
     <p id="appSubtitleText">Hub de Inteligência & Fontes Personalizadas</p>
-    
-    <div class="music-player-container">
-      <button id="musicBtn" onclick="toggleMusic()">🎵 Ouvir Música Ambiente</button>
-      <audio id="bgMusic" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3"></audio>
-    </div>
 
+    <!-- Painel de Leitura Diária -->
     <div id="dailyProgress" class="progress-bar-container">
       <span id="progressText">Leituras de hoje: 0 / 0</span>
       <div class="progress-track">
@@ -32,6 +31,7 @@
       </div>
     </div>
 
+    <!-- Busca Rápida -->
     <div class="search-container">
       <input type="text" id="searchInput" oninput="filterShortcuts()" placeholder="🔍 Pesquisar atalho...">
     </div>
@@ -39,6 +39,7 @@
     <button id="configBtn" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
   </header>
 
+  <!-- Painel de Configurações e Atalhos -->
   <div id="configPanel" class="config-panel hidden">
     <h3>🎨 Aparência da Estante</h3>
     
@@ -116,21 +117,31 @@
       checkDailyResetAt2AM();
       applySettings();
       renderShortcuts();
+      
+      // Garante a reprodução do vídeo ao carregar
+      const video = document.getElementById('owlVideo');
+      if (video) {
+        video.play().catch(() => {});
+      }
     }
 
-    // Função para tocar e pausar a música
-    function toggleMusic() {
-      const music = document.getElementById('bgMusic');
-      const btn = document.getElementById('musicBtn');
+    // Controle do som do vídeo
+    function toggleVideoSound() {
+      const video = document.getElementById('owlVideo');
+      const btn = document.getElementById('soundBtn');
 
-      if (music.paused) {
-        music.play();
-        btn.innerText = "⏸️ Pausar Música";
-        btn.classList.add("playing");
+      if (video.paused) {
+        video.play();
+      }
+
+      if (video.muted) {
+        video.muted = false;
+        btn.innerText = "🔊 Desativar Som";
+        btn.classList.add("sound-on");
       } else {
-        music.pause();
-        btn.innerText = "🎵 Ouvir Música Ambiente";
-        btn.classList.remove("playing");
+        video.muted = true;
+        btn.innerText = "🔇 Ativar Som";
+        btn.classList.remove("sound-on");
       }
     }
 
@@ -394,5 +405,4 @@
     window.onload = init;
   </script>
 </body>
-  </html>
-  
+</html>
