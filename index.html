@@ -18,7 +18,16 @@
     </video>
     <button id="soundBtn" onclick="toggleVideoSound()">🔇 Ativar Som</button>
   </div>
-
+<!-- Reprodutor de Música do YouTube no Topo -->
+  <div class="music-player-container">
+    <button id="musicBtn" onclick="toggleYoutubeMusic()">🎵 Ouvir Música Ambiente</button>
+    
+    <!-- Player oculto do YouTube para tocar a música em loop -->
+    <div id="youtubePlayerBox" style="display:none;">
+      <iframe id="ytAudioFrame" width="0" height="0" src="" title="YouTube audio player" frameborder="0" allow="autoplay"></iframe>
+    </div>
+  </div>
+  
   <header>
     <h1 id="appTitleText">Estante Estratégica</h1>
     <p id="appSubtitleText">Hub de Inteligência & Fontes Personalizadas</p>
