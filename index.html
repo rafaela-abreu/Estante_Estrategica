@@ -6,47 +6,168 @@
   <title>Estante Estratégica</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e1e24">
+  <meta name="theme-color" content="#121214">
 </head>
 <body>
+
   <header>
-    <h1>Estante Estratégica</h1>
-    <p>Hub de Inteligência & Fontes de Alto Nível</p>
+    <h1 id="appTitle">Estante Estratégica</h1>
+    <p>Hub de Inteligência & Fontes Personalizadas</p>
+    <button id="configBtn" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
   </header>
 
-  <main class="bookshelf">
-    <!-- Seção Concursos & Direito -->
-    <section class="shelf">
-      <h2>Concursos & Legislação</h2>
-      <div class="cards-container">
-        <a href="https://www.concurseria.com.br" target="_blank" class="card">
-          <div class="card-icon">📚</div>
-          <div class="card-title">DOD Comentado</div>
-        </a>
-        <a href="https://www.planalto.gov.br" target="_blank" class="card">
-          <div class="card-icon">⚖️</div>
-          <div class="card-title">Planalto Legislação</div>
-        </a>
-      </div>
-    </section>
+  <div id="configPanel" class="config-panel hidden">
+    <h3>Painel de Personalização</h3>
+    
+    <div class="config-group">
+      <label>Cor de Fundo do App:</label>
+      <input type="color" id="bgColorPicker" value="#121214" onchange="changeBgColor(this.value)">
+    </div>
 
-    <!-- Seção Geopolítica & Economia -->
+    <div class="config-group">
+      <label>Cor dos Cartões:</label>
+      <input type="color" id="cardColorPicker" value="#202024" onchange="changeCardColor(this.value)">
+    </div>
+
+    <h4>Adicionar Novo Atalho</h4>
+    <form id="addShortcutForm" onsubmit="addNewShortcut(event)">
+      <input type="text" id="newTitle" placeholder="Título do Atalho (ex: Wikipédia)" required>
+      <input type="url" id="newUrl" placeholder="Link do Site (https://...)" required>
+      <label>Imagem da Capa (Galeria):</label>
+      <input type="file" id="newImage" accept="image/*">
+      <button type="submit" class="btn-primary">+ Adicionar Atalho</button>
+    </form>
+  </div>
+
+  <main class="bookshelf">
     <section class="shelf">
-      <h2>Geopolítica & Economia</h2>
-      <div class="cards-container">
-        <a href="https://www.bloomberg.com" target="_blank" class="card">
-          <div class="card-icon">📈</div>
-          <div class="card-title">Bloomberg</div>
-        </a>
-        <a href="https://www.ft.com" target="_blank" class="card">
-          <div class="card-icon">🌐</div>
-          <div class="card-title">Financial Times</div>
-        </a>
-      </div>
+      <h2>Meus Atalhos</h2>
+      <div class="cards-container" id="cardsContainer">
+        </div>
     </section>
   </main>
 
   <script>
+    // Carregar atalhos do armazenamento local ou carregar os padrões
+    let shortcuts = JSON.parse(localStorage.getItem('my_shortcuts')) || [
+      { id: '1', title: 'DOD Comentado', url: 'https://www.concurseria.com.br', image: '' },
+      { id: '2', title: 'Planalto Legislação', url: 'https://www.planalto.gov.br', image: '' },
+      { id: '3', title: 'Bloomberg', url: 'https://www.bloomberg.com', image: '' },
+      { id: '4', title: 'Financial Times', url: 'https://www.ft.com', image: '' }
+    ];
+
+    let customBg = localStorage.getItem('custom_bg') || '#121214';
+    let customCardBg = localStorage.getItem('custom_card_bg') || '#202024';
+
+    function init() {
+      document.body.style.backgroundColor = customBg;
+      document.getElementById('bgColorPicker').value = customBg;
+      document.getElementById('cardColorPicker').value = customCardBg;
+      renderShortcuts();
+    }
+
+    function toggleConfig() {
+      const panel = document.getElementById('configPanel');
+      panel.classList.toggle('hidden');
+    }
+
+    function changeBgColor(color) {
+      document.body.style.backgroundColor = color;
+      localStorage.setItem('custom_bg', color);
+    }
+
+    function changeCardColor(color) {
+      customCardBg = color;
+      localStorage.setItem('custom_card_bg', color);
+      renderShortcuts();
+    }
+
+    function renderShortcuts() {
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = '';
+
+      shortcuts.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.backgroundColor = customCardBg;
+        card.draggable = true;
+
+        // Funções de Arrastar e Soltar (Drag & Drop)
+        card.ondragstart = (e) => e.dataTransfer.setData('text/plain', index);
+        card.ondragover = (e) => e.preventDefault();
+        card.ondrop = (e) => {
+          e.preventDefault();
+          const fromIndex = e.dataTransfer.getData('text/plain');
+          const movedItem = shortcuts.splice(fromIndex, 1)[0];
+          shortcuts.splice(index, 0, movedItem);
+          saveAndRender();
+        };
+
+        const imgHtml = item.image 
+          ? `<img src="${item.image}" class="card-img" alt="Capa">`
+          : `<div class="card-icon">🌐</div>`;
+
+        card.innerHTML = `
+          <a href="${item.url}" target="_blank" class="card-link">
+            ${imgHtml}
+            <span class="card-title">${item.title}</span>
+          </a>
+          <div class="card-actions">
+            <button onclick="deleteShortcut('${item.id}')" title="Excluir">🗑️</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function addNewShortcut(e) {
+      e.preventDefault();
+      const title = document.getElementById('newTitle').value;
+      const url = document.getElementById('newUrl').value;
+      const fileInput = document.getElementById('newImage');
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          shortcuts.push({
+            id: Date.now().toString(),
+            title: title,
+            url: url,
+            image: evt.target.result
+          });
+          saveAndRender();
+          resetForm();
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        shortcuts.push({
+          id: Date.now().toString(),
+          title: title,
+          url: url,
+          image: ''
+        });
+        saveAndRender();
+        resetForm();
+      }
+    }
+
+    function deleteShortcut(id) {
+      shortcuts = shortcuts.filter(item => item.id !== id);
+      saveAndRender();
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('my_shortcuts', JSON.stringify(shortcuts));
+      renderShortcuts();
+    }
+
+    function resetForm() {
+      document.getElementById('addShortcutForm').reset();
+    }
+
+    window.onload = init;
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
