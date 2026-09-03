@@ -6,50 +6,284 @@
   <title>Estante Estratégica</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e1e24">
+  <meta name="theme-color" content="#121214">
 </head>
 <body>
+
   <header>
-    <h1>Estante Estratégica</h1>
-    <p>Hub de Inteligência & Fontes de Alto Nível</p>
+    <h1 id="appTitleText">Estante Estratégica</h1>
+    <p id="appSubtitleText">Hub de Inteligência & Fontes Personalizadas</p>
+    <button id="configBtn" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
   </header>
 
-  <main class="bookshelf">
-    <!-- Seção Concursos & Direito -->
-    <section class="shelf">
-      <h2>Concursos & Legislação</h2>
-      <div class="cards-container">
-        <a href="https://www.concurseria.com.br" target="_blank" class="card">
-          <div class="card-icon">📚</div>
-          <div class="card-title">DOD Comentado</div>
-        </a>
-        <a href="https://www.planalto.gov.br" target="_blank" class="card">
-          <div class="card-icon">⚖️</div>
-          <div class="card-title">Planalto Legislação</div>
-        </a>
-      </div>
-    </section>
+  <!-- Painel de Personalização Completo -->
+  <div id="configPanel" class="config-panel hidden">
+    <h3>🎨 Aparência da Estante</h3>
+    
+    <div class="config-group">
+      <label>Título da Estante:</label>
+      <input type="text" id="titleInput" onchange="updateAppTitle(this.value)" placeholder="Nome da Estante">
+    </div>
 
-    <!-- Seção Geopolítica & Economia -->
-    <section class="shelf">
-      <h2>Geopolítica & Economia</h2>
-      <div class="cards-container">
-        <a href="https://www.bloomberg.com" target="_blank" class="card">
-          <div class="card-icon">📈</div>
-          <div class="card-title">Bloomberg</div>
-        </a>
-        <a href="https://www.ft.com" target="_blank" class="card">
-          <div class="card-icon">🌐</div>
-          <div class="card-title">Financial Times</div>
-        </a>
+    <div class="config-group">
+      <label>Cor de Fundo da Estante:</label>
+      <input type="color" id="bgColorPicker" onchange="changeBgColor(this.value)">
+    </div>
+
+    <div class="config-group">
+      <label>Cor dos Cartões:</label>
+      <input type="color" id="cardColorPicker" onchange="changeCardColor(this.value)">
+    </div>
+
+    <div class="config-group">
+      <label>Modelo de Borda:</label>
+      <select id="borderRadiusSelect" onchange="changeCardStyle(this.value)">
+        <option value="8px">Arredondado Leve</option>
+        <option value="18px">Arredondado Suave</option>
+        <option value="0px">Quadrado</option>
+      </select>
+    </div>
+
+    <hr class="divider">
+
+    <h3 id="formTitle">➕ Adicionar / Editar Atalho</h3>
+    <form id="shortcutForm" onsubmit="handleShortcutSubmit(event)">
+      <input type="hidden" id="editIndex" value="-1">
+      
+      <input type="text" id="shortcutTitle" placeholder="Nome do Atalho (ex: Wikipédia)" required>
+      <input type="url" id="shortcutUrl" placeholder="Link do Site (https://...)" required>
+      
+      <label>Capa do Atalho (Foto da Galeria ou Ícone Emoji):</label>
+      <input type="file" id="shortcutImage" accept="image/*">
+      <input type="text" id="shortcutEmoji" placeholder="Ou digite um Emoji (ex: 📚, ⚖️, 🌐)">
+      
+      <div class="form-buttons">
+        <button type="submit" class="btn-primary" id="saveBtn">Salvar Atalho</button>
+        <button type="button" class="btn-secondary hidden" id="cancelBtn" onclick="resetForm()">Cancelar Edição</button>
       </div>
-    </section>
+    </form>
+  </div>
+
+  <!-- Área Principal da Estante -->
+  <main class="bookshelf">
+    <div class="cards-container" id="cardsContainer"></div>
   </main>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+    // Estado inicial do aplicativo
+    let appSettings = JSON.parse(localStorage.getItem('estante_config')) || {
+      title: 'Estante Estratégica',
+      bg: '#121214',
+      cardBg: '#202024',
+      borderRadius: '12px'
+    };
+
+    let shortcuts = JSON.parse(localStorage.getItem('estante_shortcuts')) || [
+      { id: '1', title: 'DOD Comentado', url: 'https://www.concurseria.com.br', image: '', emoji: '📚' },
+      { id: '2', title: 'Planalto Legislação', url: 'https://www.planalto.gov.br', image: '', emoji: '⚖️' },
+      { id: '3', title: 'Bloomberg', url: 'https://www.bloomberg.com', image: '', emoji: '📈' },
+      { id: '4', title: 'Financial Times', url: 'https://www.ft.com', image: '', emoji: '🌐' }
+    ];
+
+    function init() {
+      applySettings();
+      renderShortcuts();
     }
+
+    function applySettings() {
+      document.getElementById('appTitleText').innerText = appSettings.title;
+      document.getElementById('titleInput').value = appSettings.title;
+      document.body.style.backgroundColor = appSettings.bg;
+      document.getElementById('bgColorPicker').value = appSettings.bg;
+      document.getElementById('cardColorPicker').value = appSettings.cardBg;
+      document.getElementById('borderRadiusSelect').value = appSettings.borderRadius;
+    }
+
+    function toggleConfig() {
+      document.getElementById('configPanel').classList.toggle('hidden');
+    }
+
+    function updateAppTitle(val) {
+      appSettings.title = val || 'Estante Estratégica';
+      document.getElementById('appTitleText').innerText = appSettings.title;
+      saveSettings();
+    }
+
+    function changeBgColor(color) {
+      appSettings.bg = color;
+      document.body.style.backgroundColor = color;
+      saveSettings();
+    }
+
+    function changeCardColor(color) {
+      appSettings.cardBg = color;
+      saveSettings();
+      renderShortcuts();
+    }
+
+    function changeCardStyle(radius) {
+      appSettings.borderRadius = radius;
+      saveSettings();
+      renderShortcuts();
+    }
+
+    function saveSettings() {
+      localStorage.setItem('estante_config', JSON.stringify(appSettings));
+    }
+
+    function saveShortcuts() {
+      try {
+        localStorage.setItem('estante_shortcuts', JSON.stringify(shortcuts));
+      } catch (e) {
+        alert("A imagem selecionada é muito grande para o armazenamento do navegador. Tente uma foto menor.");
+      }
+    }
+
+    // Compressão automática de imagem da galeria
+    function compressImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const maxDim = 200; // Redimensiona para foto de capa leve
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height *= maxDim / width;
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width *= maxDim / height;
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          callback(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderShortcuts() {
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = '';
+
+      shortcuts.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.backgroundColor = appSettings.cardBg;
+        card.style.borderRadius = appSettings.borderRadius;
+
+        const coverHtml = item.image 
+          ? `<img src="${item.image}" class="card-img" alt="Capa">`
+          : `<div class="card-icon">${item.emoji || '🌐'}</div>`;
+
+        card.innerHTML = `
+          <a href="${item.url}" target="_blank" class="card-link">
+            ${coverHtml}
+            <span class="card-title">${item.title}</span>
+          </a>
+          <div class="card-controls">
+            <button onclick="moveShortcut(${index}, -1)" title="Mover para esquerda/cima">⬅️</button>
+            <button onclick="editShortcut(${index})" title="Editar Atalho / Trocar Capa">✏️</button>
+            <button onclick="deleteShortcut(${index})" title="Excluir">🗑️</button>
+            <button onclick="moveShortcut(${index}, 1)" title="Mover para direita/baixo">➡️</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function handleShortcutSubmit(e) {
+      e.preventDefault();
+      const editIdx = parseInt(document.getElementById('editIndex').value);
+      const title = document.getElementById('shortcutTitle').value;
+      const url = document.getElementById('shortcutUrl').value;
+      const emoji = document.getElementById('shortcutEmoji').value;
+      const fileInput = document.getElementById('shortcutImage');
+
+      const processSave = (imageData) => {
+        const itemData = {
+          id: editIdx >= 0 ? shortcuts[editIdx].id : Date.now().toString(),
+          title: title,
+          url: url,
+          emoji: emoji,
+          image: imageData !== null ? imageData : (editIdx >= 0 ? shortcuts[editIdx].image : '')
+        };
+
+        if (editIdx >= 0) {
+          shortcuts[editIdx] = itemData;
+        } else {
+          shortcuts.push(itemData);
+        }
+
+        saveShortcuts();
+        renderShortcuts();
+        resetForm();
+      };
+
+      if (fileInput.files && fileInput.files[0]) {
+        compressImage(fileInput.files[0], (compressedData) => {
+          processSave(compressedData);
+        });
+      } else {
+        processSave(null);
+      }
+    }
+
+    function editShortcut(index) {
+      const item = shortcuts[index];
+      document.getElementById('editIndex').value = index;
+      document.getElementById('shortcutTitle').value = item.title;
+      document.getElementById('shortcutUrl').value = item.url;
+      document.getElementById('shortcutEmoji').value = item.emoji || '';
+      document.getElementById('formTitle').innerText = '✏️ Editar Atalho / Trocar Capa';
+      document.getElementById('saveBtn').innerText = 'Atualizar Atalho';
+      document.getElementById('cancelBtn').classList.remove('hidden');
+      
+      // Abre o painel se estiver fechado
+      document.getElementById('configPanel').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteShortcut(index) {
+      if (confirm(`Deseja apagar o atalho "${shortcuts[index].title}"?`)) {
+        shortcuts.splice(index, 1);
+        saveShortcuts();
+        renderShortcuts();
+      }
+    }
+
+    function moveShortcut(index, direction) {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= shortcuts.length) return;
+      
+      const temp = shortcuts[index];
+      shortcuts[index] = shortcuts[newIndex];
+      shortcuts[newIndex] = temp;
+      
+      saveShortcuts();
+      renderShortcuts();
+    }
+
+    function resetForm() {
+      document.getElementById('shortcutForm').reset();
+      document.getElementById('editIndex').value = '-1';
+      document.getElementById('formTitle').innerText = '➕ Adicionar / Editar Atalho';
+      document.getElementById('saveBtn').innerText = 'Salvar Atalho';
+      document.getElementById('cancelBtn').classList.add('hidden');
+    }
+
+    window.onload = init;
   </script>
 </body>
 </html>
