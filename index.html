@@ -6,6 +6,7 @@
   <title>Estante Estratégica</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="capa.jpg">
   <meta name="theme-color" content="#121214">
 </head>
 <body>
@@ -297,13 +298,17 @@
     // Funções de Arrastar e Soltar (Drag & Drop)
     function handleDragStart(e, index) {
       draggedIndex = index;
-      e.dataTransfer.effectAllowed = 'move';
-      e.target.classList.add('dragging');
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+      }
+      e.currentTarget.classList.add('dragging');
     }
 
     function handleDragOver(e) {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'move';
+      }
     }
 
     function handleDrop(e, targetIndex) {
@@ -318,7 +323,7 @@
     }
 
     function handleDragEnd(e) {
-      e.target.classList.remove('dragging');
+      e.currentTarget.classList.remove('dragging');
       draggedIndex = null;
     }
 
