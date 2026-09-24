@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- Vídeo da Coruja no Topo -->
+  <!-- Vídeo do Topo -->
   <div class="video-container">
     <video id="owlVideo" loop playsinline muted autoplay>
       <source src="coruja.mp4" type="video/mp4">
@@ -24,7 +24,7 @@
     <h1 id="appTitleText">Estante Estratégica</h1>
     <p id="appSubtitleText">Hub de Inteligência & Fontes Personalizadas</p>
 
-    <!-- Painel de Leitura Diária -->
+    <!-- Barra de Progresso Diária -->
     <div id="dailyProgress" class="progress-bar-container">
       <span id="progressText">Leituras de hoje: 0 / 0</span>
       <div class="progress-track">
@@ -32,25 +32,43 @@
       </div>
     </div>
 
-    <!-- Busca Rápida -->
+    <!-- Campo de Pesquisa -->
     <div class="search-container">
       <input type="text" id="searchInput" oninput="filterShortcuts()" placeholder="🔍 Pesquisar atalho...">
     </div>
 
-    <!-- Barra de Categorias -->
-    <div class="category-bar">
-      <button class="tab-btn active" onclick="setCategoryFilter('todas', this)">Todas</button>
-      <button class="tab-btn" onclick="setCategoryFilter('vagas', this)">💼 Vagas</button>
-      <button class="tab-btn" onclick="setCategoryFilter('economia', this)">📈 Economia & Agro</button>
-      <button class="tab-btn" onclick="setCategoryFilter('noticias', this)">🌐 Notícias</button>
-      <button class="tab-btn" onclick="setCategoryFilter('tech', this)">🚀 Tech & Espaço</button>
-      <button class="tab-btn" onclick="setCategoryFilter('religiao', this)">🙏 Religião</button>
+    <!-- BOTOES DE AÇÃO NO TOPO -->
+    <div class="top-actions-bar">
+      <button id="addCategoryBtn" class="btn-action" onclick="toggleCategoryPanel()">🏷️ + Categoria</button>
+      <button id="configBtn" class="btn-action" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
     </div>
 
-    <button id="configBtn" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
+    <!-- Barra Dinâmica de Categorias -->
+    <div class="category-bar" id="categoryBar">
+      <!-- Gerado via JavaScript -->
+    </div>
   </header>
 
-  <!-- Painel de Configurações -->
+  <!-- PAINEL EXCLUSIVO PARA CRIAR CATEGORIAS -->
+  <div id="categoryPanel" class="config-panel hidden">
+    <h3>🏷️ Criar e Gerenciar Categorias</h3>
+    <form onsubmit="handleAddCategory(event)" class="config-group">
+      <input type="text" id="newCatName" placeholder="Nome da Categoria (ex: Esportes, Filmes...)" required>
+      <input type="text" id="newCatEmoji" placeholder="Emoji (ex: ⚽, 🎬)" style="width: 100px;">
+      <button type="submit" class="btn-primary" style="margin-top: 8px;">+ Salvar Nova Categoria</button>
+    </form>
+    
+    <hr class="divider">
+    
+    <h4>Categorias Existentes:</h4>
+    <div id="categoryManageList" class="category-manage-list">
+      <!-- Lista de categorias para exclusão via JS -->
+    </div>
+    
+    <button type="button" class="btn-secondary" onclick="toggleCategoryPanel()" style="margin-top: 15px;">Fechar</button>
+  </div>
+
+  <!-- PAINEL DE CONFIGURAÇÕES GERAIS -->
   <div id="configPanel" class="config-panel hidden">
     <h3>🎨 Aparência da Estante</h3>
     
@@ -91,16 +109,12 @@
     <form id="shortcutForm" onsubmit="handleShortcutSubmit(event)">
       <input type="hidden" id="editIndex" value="-1">
       
-      <input type="text" id="shortcutTitle" placeholder="Nome do Atalho (Renomeie como quiser)" required>
+      <input type="text" id="shortcutTitle" placeholder="Nome do Atalho" required>
       <input type="url" id="shortcutUrl" placeholder="Link do Site (https://...)" required>
       
       <label for="shortcutCategory">Categoria do Atalho:</label>
       <select id="shortcutCategory" required>
-        <option value="vagas">💼 Vagas & Oportunidades</option>
-        <option value="economia">📈 Economia, Cripto & Agro</option>
-        <option value="noticias">🌐 Notícias Globais & Locais</option>
-        <option value="tech">🚀 Tech, Ciência & Espaço</option>
-        <option value="religiao">🙏 Mundo Religioso</option>
+        <!-- As categorias serão inseridas dinamicamente aqui -->
       </select>
 
       <label>Capa do Atalho (Foto da Galeria ou Emoji):</label>
@@ -129,18 +143,26 @@
       borderRadius: '12px'
     };
 
+    let customCategories = JSON.parse(localStorage.getItem('estante_categories')) || [
+      { id: 'vagas', name: 'Vagas', emoji: '💼' },
+      { id: 'economia', name: 'Economia & Agro', emoji: '📈' },
+      { id: 'noticias', name: 'Notícias', emoji: '🌐' },
+      { id: 'tech', name: 'Tech & Espaço', emoji: '🚀' },
+      { id: 'religiao', name: 'Religião', emoji: '🙏' }
+    ];
+
     let shortcuts = JSON.parse(localStorage.getItem('estante_shortcuts')) || [
-      { id: '1', title: 'DOD Comentado', url: 'https://www.concurseria.com.br', image: '', emoji: '📚', read: false, category: 'vagas' },
-      { id: '2', title: 'Planalto Legislação', url: 'https://www.planalto.gov.br', image: '', emoji: '⚖️', read: false, category: 'vagas' },
-      { id: '3', title: 'Bloomberg', url: 'https://www.bloomberg.com', image: '', emoji: '📈', read: false, category: 'economia' },
-      { id: '4', title: 'Financial Times', url: 'https://www.ft.com', image: '', emoji: '🌐', read: false, category: 'economia' }
+      { id: '1', title: 'PCI Concursos', url: 'https://www.pciconcursos.com.br', image: '', emoji: '📚', read: false, category: 'vagas' },
+      { id: '2', title: 'Wired Tech', url: 'https://www.wired.com', image: '', emoji: '🚀', read: false, category: 'tech' }
     ];
 
     function init() {
       checkDailyResetAt2AM();
       applySettings();
+      renderCategoriesUI();
+      renderCategoryDropdown();
       renderShortcuts();
-      
+
       const video = document.getElementById('owlVideo');
       if (video) {
         video.play().catch(() => {});
@@ -188,7 +210,87 @@
     }
 
     function toggleConfig() {
+      document.getElementById('categoryPanel').classList.add('hidden');
       document.getElementById('configPanel').classList.toggle('hidden');
+    }
+
+    function toggleCategoryPanel() {
+      document.getElementById('configPanel').classList.add('hidden');
+      const panel = document.getElementById('categoryPanel');
+      panel.classList.toggle('hidden');
+      if (!panel.classList.contains('hidden')) {
+        renderCategoryManageList();
+      }
+    }
+
+    function handleAddCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('newCatName').value.trim();
+      const emoji = document.getElementById('newCatEmoji').value.trim() || '🏷️';
+      
+      if (!name) return;
+
+      const id = 'cat_' + Date.now();
+      customCategories.push({ id, name, emoji });
+      
+      localStorage.setItem('estante_categories', JSON.stringify(customCategories));
+      
+      document.getElementById('newCatName').value = '';
+      document.getElementById('newCatEmoji').value = '';
+
+      renderCategoriesUI();
+      renderCategoryDropdown();
+      renderCategoryManageList();
+    }
+
+    function removeCategory(id) {
+      if (confirm("Tem certeza que deseja apagar esta categoria?")) {
+        customCategories = customCategories.filter(c => c.id !== id);
+        localStorage.setItem('estante_categories', JSON.stringify(customCategories));
+        renderCategoriesUI();
+        renderCategoryDropdown();
+        renderCategoryManageList();
+      }
+    }
+
+    function renderCategoryManageList() {
+      const listContainer = document.getElementById('categoryManageList');
+      listContainer.innerHTML = '';
+      
+      customCategories.forEach(cat => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 8px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 6px;';
+        item.innerHTML = `
+          <span>${cat.emoji} ${cat.name}</span>
+          <button onclick="removeCategory('${cat.id}')" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">🗑️</button>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    function renderCategoriesUI() {
+      const bar = document.getElementById('categoryBar');
+      bar.innerHTML = `<button class="tab-btn ${currentCategory === 'todas' ? 'active' : ''}" onclick="setCategoryFilter('todas', this)">Todas</button>`;
+
+      customCategories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${currentCategory === cat.id ? 'active' : ''}`;
+        btn.innerText = `${cat.emoji} ${cat.name}`;
+        btn.onclick = (e) => setCategoryFilter(cat.id, btn);
+        bar.appendChild(btn);
+      });
+    }
+
+    function renderCategoryDropdown() {
+      const select = document.getElementById('shortcutCategory');
+      select.innerHTML = '';
+
+      customCategories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.innerText = `${cat.emoji} ${cat.name}`;
+        select.appendChild(opt);
+      });
     }
 
     function updateAppTitle(val) {
@@ -295,20 +397,15 @@
       renderShortcuts(query);
     }
 
-    // Funções de Arrastar e Soltar (Drag & Drop)
     function handleDragStart(e, index) {
       draggedIndex = index;
-      if (e.dataTransfer) {
-        e.dataTransfer.effectAllowed = 'move';
-      }
-      e.currentTarget.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.target.classList.add('dragging');
     }
 
     function handleDragOver(e) {
       e.preventDefault();
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect = 'move';
-      }
+      e.dataTransfer.dropEffect = 'move';
     }
 
     function handleDrop(e, targetIndex) {
@@ -323,7 +420,7 @@
     }
 
     function handleDragEnd(e) {
-      e.currentTarget.classList.remove('dragging');
+      e.target.classList.remove('dragging');
       draggedIndex = null;
     }
 
@@ -342,7 +439,6 @@
         card.style.backgroundColor = appSettings.cardBg;
         card.style.borderRadius = appSettings.borderRadius;
         
-        // Habilita arrastar o cartão
         card.draggable = true;
         card.ondragstart = (e) => handleDragStart(e, index);
         card.ondragover = (e) => handleDragOver(e);
@@ -428,6 +524,7 @@
       document.getElementById('saveBtn').innerText = 'Atualizar Atalho';
       document.getElementById('cancelBtn').classList.remove('hidden');
       
+      document.getElementById('categoryPanel').classList.add('hidden');
       document.getElementById('configPanel').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -451,17 +548,10 @@
     function exportBackup() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
         config: appSettings,
+        categories: customCategories,
         shortcuts: shortcuts
       }));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", "estante_estrategica_backup.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    window.onload = init;
-  </script>
-</body>
-</html>
+      document.body.app
