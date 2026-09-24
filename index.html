@@ -10,7 +10,7 @@
 </head>
 <body>
 
-  <!-- Vídeo da Coruja no Topo com controle de som -->
+  <!-- Vídeo da Coruja no Topo -->
   <div class="video-container">
     <video id="owlVideo" loop playsinline muted autoplay>
       <source src="coruja.mp4" type="video/mp4">
@@ -36,10 +36,20 @@
       <input type="text" id="searchInput" oninput="filterShortcuts()" placeholder="🔍 Pesquisar atalho...">
     </div>
 
+    <!-- Barra de Categorias -->
+    <div class="category-bar">
+      <button class="tab-btn active" onclick="setCategoryFilter('todas', this)">Todas</button>
+      <button class="tab-btn" onclick="setCategoryFilter('vagas', this)">💼 Vagas</button>
+      <button class="tab-btn" onclick="setCategoryFilter('economia', this)">📈 Economia & Agro</button>
+      <button class="tab-btn" onclick="setCategoryFilter('noticias', this)">🌐 Notícias</button>
+      <button class="tab-btn" onclick="setCategoryFilter('tech', this)">🚀 Tech & Espaço</button>
+      <button class="tab-btn" onclick="setCategoryFilter('religiao', this)">🙏 Religião</button>
+    </div>
+
     <button id="configBtn" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
   </header>
 
-  <!-- Painel de Configurações e Atalhos -->
+  <!-- Painel de Configurações -->
   <div id="configPanel" class="config-panel hidden">
     <h3>🎨 Aparência da Estante</h3>
     
@@ -80,10 +90,19 @@
     <form id="shortcutForm" onsubmit="handleShortcutSubmit(event)">
       <input type="hidden" id="editIndex" value="-1">
       
-      <input type="text" id="shortcutTitle" placeholder="Nome do Atalho (ex: Wikipédia)" required>
+      <input type="text" id="shortcutTitle" placeholder="Nome do Atalho (Renomeie como quiser)" required>
       <input type="url" id="shortcutUrl" placeholder="Link do Site (https://...)" required>
       
-      <label>Capa do Atalho (Foto da Galeria ou Ícone Emoji):</label>
+      <label for="shortcutCategory">Categoria do Atalho:</label>
+      <select id="shortcutCategory" required>
+        <option value="vagas">💼 Vagas & Oportunidades</option>
+        <option value="economia">📈 Economia, Cripto & Agro</option>
+        <option value="noticias">🌐 Notícias Globais & Locais</option>
+        <option value="tech">🚀 Tech, Ciência & Espaço</option>
+        <option value="religiao">🙏 Mundo Religioso</option>
+      </select>
+
+      <label>Capa do Atalho (Foto da Galeria ou Emoji):</label>
       <input type="file" id="shortcutImage" accept="image/*">
       <input type="text" id="shortcutEmoji" placeholder="Ou digite um Emoji (ex: 📚, ⚖️, 🌐)">
       
@@ -99,6 +118,9 @@
   </main>
 
   <script>
+    let currentCategory = 'todas';
+    let draggedIndex = null;
+
     let appSettings = JSON.parse(localStorage.getItem('estante_config')) || {
       title: 'Estante Estratégica',
       bg: '#121214',
@@ -107,10 +129,10 @@
     };
 
     let shortcuts = JSON.parse(localStorage.getItem('estante_shortcuts')) || [
-      { id: '1', title: 'DOD Comentado', url: 'https://www.concurseria.com.br', image: '', emoji: '📚', read: false },
-      { id: '2', title: 'Planalto Legislação', url: 'https://www.planalto.gov.br', image: '', emoji: '⚖️', read: false },
-      { id: '3', title: 'Bloomberg', url: 'https://www.bloomberg.com', image: '', emoji: '📈', read: false },
-      { id: '4', title: 'Financial Times', url: 'https://www.ft.com', image: '', emoji: '🌐', read: false }
+      { id: '1', title: 'DOD Comentado', url: 'https://www.concurseria.com.br', image: '', emoji: '📚', read: false, category: 'vagas' },
+      { id: '2', title: 'Planalto Legislação', url: 'https://www.planalto.gov.br', image: '', emoji: '⚖️', read: false, category: 'vagas' },
+      { id: '3', title: 'Bloomberg', url: 'https://www.bloomberg.com', image: '', emoji: '📈', read: false, category: 'economia' },
+      { id: '4', title: 'Financial Times', url: 'https://www.ft.com', image: '', emoji: '🌐', read: false, category: 'economia' }
     ];
 
     function init() {
@@ -118,14 +140,12 @@
       applySettings();
       renderShortcuts();
       
-      // Garante a reprodução do vídeo ao carregar
       const video = document.getElementById('owlVideo');
       if (video) {
         video.play().catch(() => {});
       }
     }
 
-    // Controle do som do vídeo
     function toggleVideoSound() {
       const video = document.getElementById('owlVideo');
       const btn = document.getElementById('soundBtn');
@@ -145,7 +165,6 @@
       }
     }
 
-    // Reset automático diário definido às 02:00 AM
     function checkDailyResetAt2AM() {
       const now = new Date();
       const operationalDate = new Date(now.getTime() - (2 * 60 * 60 * 1000)).toDateString();
@@ -262,22 +281,68 @@
       document.getElementById('progressFill').style.width = `${percentage}%`;
     }
 
+    function setCategoryFilter(category, btnElement) {
+      currentCategory = category;
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      if (btnElement) btnElement.classList.add('active');
+      filterShortcuts();
+    }
+
     function filterShortcuts() {
       const query = document.getElementById('searchInput').value.toLowerCase();
       renderShortcuts(query);
     }
 
-    function renderShortcuts(filter = '') {
+    // Funções de Arrastar e Soltar (Drag & Drop)
+    function handleDragStart(e, index) {
+      draggedIndex = index;
+      e.dataTransfer.effectAllowed = 'move';
+      e.target.classList.add('dragging');
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDrop(e, targetIndex) {
+      e.preventDefault();
+      if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+      const itemMoved = shortcuts.splice(draggedIndex, 1)[0];
+      shortcuts.splice(targetIndex, 0, itemMoved);
+
+      saveShortcuts();
+      renderShortcuts();
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+      draggedIndex = null;
+    }
+
+    function renderShortcuts(filterText = '') {
       const container = document.getElementById('cardsContainer');
       container.innerHTML = '';
 
       shortcuts.forEach((item, index) => {
-        if (filter && !item.title.toLowerCase().includes(filter)) return;
+        const itemCategory = item.category || 'vagas';
+
+        if (currentCategory !== 'todas' && itemCategory !== currentCategory) return;
+        if (filterText && !item.title.toLowerCase().includes(filterText)) return;
 
         const card = document.createElement('div');
         card.className = `card ${item.read ? 'card-read' : ''}`;
         card.style.backgroundColor = appSettings.cardBg;
         card.style.borderRadius = appSettings.borderRadius;
+        
+        // Habilita arrastar o cartão
+        card.draggable = true;
+        card.ondragstart = (e) => handleDragStart(e, index);
+        card.ondragover = (e) => handleDragOver(e);
+        card.ondrop = (e) => handleDrop(e, index);
+        card.ondragend = (e) => handleDragEnd(e);
 
         const coverHtml = item.image 
           ? `<img src="${item.image}" class="card-img" alt="Capa">`
@@ -296,10 +361,8 @@
             <span class="card-title">${item.title}</span>
           </a>
           <div class="card-controls">
-            <button onclick="moveShortcut(${index}, -1)" title="Mover para esquerda/cima">⬅️</button>
-            <button onclick="editShortcut(${index})" title="Editar Atalho / Trocar Capa">✏️</button>
+            <button onclick="editShortcut(${index})" title="Editar / Trocar Capa">✏️</button>
             <button onclick="deleteShortcut(${index})" title="Excluir">🗑️</button>
-            <button onclick="moveShortcut(${index}, 1)" title="Mover para direita/baixo">➡️</button>
           </div>
         `;
 
@@ -314,6 +377,7 @@
       const editIdx = parseInt(document.getElementById('editIndex').value);
       const title = document.getElementById('shortcutTitle').value;
       const url = document.getElementById('shortcutUrl').value;
+      const category = document.getElementById('shortcutCategory').value;
       const emoji = document.getElementById('shortcutEmoji').value;
       const fileInput = document.getElementById('shortcutImage');
 
@@ -322,6 +386,7 @@
           id: editIdx >= 0 ? shortcuts[editIdx].id : Date.now().toString(),
           title: title,
           url: url,
+          category: category,
           emoji: emoji,
           read: editIdx >= 0 ? shortcuts[editIdx].read : false,
           image: imageData !== null ? imageData : (editIdx >= 0 ? shortcuts[editIdx].image : '')
@@ -352,6 +417,7 @@
       document.getElementById('editIndex').value = index;
       document.getElementById('shortcutTitle').value = item.title;
       document.getElementById('shortcutUrl').value = item.url;
+      document.getElementById('shortcutCategory').value = item.category || 'vagas';
       document.getElementById('shortcutEmoji').value = item.emoji || '';
       document.getElementById('formTitle').innerText = '✏️ Editar Atalho / Trocar Capa';
       document.getElementById('saveBtn').innerText = 'Atualizar Atalho';
@@ -367,18 +433,6 @@
         saveShortcuts();
         renderShortcuts();
       }
-    }
-
-    function moveShortcut(index, direction) {
-      const newIndex = index + direction;
-      if (newIndex < 0 || newIndex >= shortcuts.length) return;
-      
-      const temp = shortcuts[index];
-      shortcuts[index] = shortcuts[newIndex];
-      shortcuts[newIndex] = temp;
-      
-      saveShortcuts();
-      renderShortcuts();
     }
 
     function resetForm() {
