@@ -319,7 +319,7 @@ header p {
   border: 2px dashed #00b37e !important;
 }
 
-/* REMOVE O VÉU BRANCO / OPACIDADE DOS CARTÕES LIDOS */
+/* Mantém os cartões lidos visíveis sem apagar */
 .card-read {
   opacity: 1 !important;
   filter: none !important;
