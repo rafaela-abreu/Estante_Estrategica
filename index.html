@@ -147,9 +147,7 @@
 
     let defaultShortcuts = [
       { id: '1', title: 'PCI Concursos', url: 'https://www.pciconcursos.com.br', image: '', emoji: '📚', read: false, category: 'vagas' },
-      { id: '2', title: 'Wired Tech', url: 'https://www.wired.com', image: '', emoji: '🚀', read: false, category: 'tech' },
-      { id: '3', title: 'InfoMoney', url: 'https://www.infomoney.com.br', image: '', emoji: '📈', read: false, category: 'economia' },
-      { id: '4', title: 'Notícias Agrícolas', url: 'https://www.noticiasagricolas.com.br', image: '', emoji: '🌾', read: false, category: 'economia' }
+      { id: '2', title: 'Wired Tech', url: 'https://www.wired.com', image: '', emoji: '🚀', read: false, category: 'tech' }
     ];
 
     let appSettings = JSON.parse(localStorage.getItem('estante_config')) || {
@@ -160,15 +158,13 @@
     };
 
     let customCategories = JSON.parse(localStorage.getItem('estante_categories'));
-    if (!customCategories || customCategories.length === 0) {
+    if (!customCategories || !Array.isArray(customCategories) || customCategories.length === 0) {
       customCategories = defaultCategories;
-      localStorage.setItem('estante_categories', JSON.stringify(customCategories));
     }
 
     let shortcuts = JSON.parse(localStorage.getItem('estante_shortcuts'));
-    if (!shortcuts || shortcuts.length === 0) {
+    if (!shortcuts || !Array.isArray(shortcuts) || shortcuts.length === 0) {
       shortcuts = defaultShortcuts;
-      localStorage.setItem('estante_shortcuts', JSON.stringify(shortcuts));
     }
 
     function init() {
@@ -181,7 +177,7 @@
 
       const video = document.getElementById('owlVideo');
       if (video) {
-        video.play().catch(() => {});
+        video.play().catch(function() {});
       }
     }
 
@@ -210,7 +206,7 @@
       const lastReset = localStorage.getItem('estante_last_reset');
 
       if (lastReset !== operationalDate) {
-        shortcuts.forEach(item => item.read = false);
+        shortcuts.forEach(function(item) { item.read = false; });
         localStorage.setItem('estante_last_reset', operationalDate);
         saveShortcuts();
       }
@@ -254,7 +250,7 @@
       if (!name) return;
 
       const id = 'cat_' + Date.now();
-      customCategories.push({ id, name, emoji });
+      customCategories.push({ id: id, name: name, emoji: emoji });
       
       localStorage.setItem('estante_categories', JSON.stringify(customCategories));
       
@@ -268,7 +264,7 @@
 
     function removeCategory(id) {
       if (confirm("Tem certeza que deseja apagar esta categoria?")) {
-        customCategories = customCategories.filter(c => c.id !== id);
+        customCategories = customCategories.filter(function(c) { return c.id !== id; });
         localStorage.setItem('estante_categories', JSON.stringify(customCategories));
         renderCategoriesUI();
         renderCategoryDropdown();
@@ -281,13 +277,11 @@
       if (!listContainer) return;
       listContainer.innerHTML = '';
       
-      customCategories.forEach(cat => {
+      customCategories.forEach(function(cat) {
         const item = document.createElement('div');
         item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 8px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 6px;';
-        item.innerHTML = `
-          <span>${cat.emoji} ${cat.name}</span>
-          <button onclick="removeCategory('${cat.id}')" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">🗑️</button>
-        `;
+        item.innerHTML = '<span>' + cat.emoji + ' ' + cat.name + '</span>' +
+          '<button onclick="removeCategory(\'' + cat.id + '\')" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">🗑️</button>';
         listContainer.appendChild(item);
       });
     }
@@ -295,13 +289,13 @@
     function renderCategoriesUI() {
       const bar = document.getElementById('categoryBar');
       if (!bar) return;
-      bar.innerHTML = `<button class="tab-btn ${currentCategory === 'todas' ? 'active' : ''}" onclick="setCategoryFilter('todas', this)">Todas</button>`;
+      bar.innerHTML = '<button class="tab-btn ' + (currentCategory === 'todas' ? 'active' : '') + '" onclick="setCategoryFilter(\'todas\', this)">Todas</button>';
 
-      customCategories.forEach(cat => {
+      customCategories.forEach(function(cat) {
         const btn = document.createElement('button');
-        btn.className = `tab-btn ${currentCategory === cat.id ? 'active' : ''}`;
-        btn.innerText = `${cat.emoji} ${cat.name}`;
-        btn.onclick = (e) => setCategoryFilter(cat.id, btn);
+        btn.className = 'tab-btn ' + (currentCategory === cat.id ? 'active' : '');
+        btn.innerText = cat.emoji + ' ' + cat.name;
+        btn.onclick = function(e) { setCategoryFilter(cat.id, btn); };
         bar.appendChild(btn);
       });
     }
@@ -311,10 +305,10 @@
       if (!select) return;
       select.innerHTML = '';
 
-      customCategories.forEach(cat => {
+      customCategories.forEach(function(cat) {
         const opt = document.createElement('option');
         opt.value = cat.id;
-        opt.innerText = `${cat.emoji} ${cat.name}`;
+        opt.innerText = cat.emoji + ' ' + cat.name;
         select.appendChild(opt);
       });
     }
@@ -403,7 +397,7 @@
 
     function resetAllReadStatus() {
       if (confirm("Tem certeza que deseja zerar todos os vistos agora?")) {
-        shortcuts.forEach(item => item.read = false);
+        shortcuts.forEach(function(item) { item.read = false; });
         saveShortcuts();
         renderShortcuts();
       }
@@ -411,20 +405,20 @@
 
     function updateProgressBar() {
       const total = shortcuts.length;
-      const readCount = shortcuts.filter(s => s.read).length;
+      const readCount = shortcuts.filter(function(s) { return s.read; }).length;
       const percentage = total > 0 ? Math.round((readCount / total) * 100) : 0;
 
       const progressText = document.getElementById('progressText');
       const progressFill = document.getElementById('progressFill');
 
-      if (progressText) progressText.innerText = `Leituras de hoje: ${readCount} / ${total} (${percentage}%)`;
-      if (progressFill) progressFill.style.width = `${percentage}%`;
+      if (progressText) progressText.innerText = 'Leituras de hoje: ' + readCount + ' / ' + total + ' (' + percentage + '%)';
+      if (progressFill) progressFill.style.width = percentage + '%';
     }
 
     function setCategoryFilter(category, btnElement) {
       currentCategory = category;
       const buttons = document.querySelectorAll('.tab-btn');
-      buttons.forEach(btn => btn.classList.remove('active'));
+      buttons.forEach(function(btn) { btn.classList.remove('active'); });
       if (btnElement) btnElement.classList.add('active');
       filterShortcuts();
     }
@@ -462,49 +456,47 @@
       draggedIndex = null;
     }
 
-    function renderShortcuts(filterText = '') {
+    function renderShortcuts(filterText) {
+      if (typeof filterText === 'undefined') filterText = '';
       const container = document.getElementById('cardsContainer');
       if (!container) return;
       container.innerHTML = '';
 
-      shortcuts.forEach((item, index) => {
+      shortcuts.forEach(function(item, index) {
         const itemCategory = item.category || 'vagas';
 
         if (currentCategory !== 'todas' && itemCategory !== currentCategory) return;
         if (filterText && !item.title.toLowerCase().includes(filterText)) return;
 
         const card = document.createElement('div');
-        card.className = `card ${item.read ? 'card-read' : ''}`;
+        card.className = 'card ' + (item.read ? 'card-read' : '');
         card.style.backgroundColor = appSettings.cardBg;
         card.style.borderRadius = appSettings.borderRadius;
         
         card.draggable = true;
-        card.ondragstart = (e) => handleDragStart(e, index);
-        card.ondragover = (e) => handleDragOver(e);
-        card.ondrop = (e) => handleDrop(e, index);
-        card.ondragend = (e) => handleDragEnd(e);
+        card.ondragstart = function(e) { handleDragStart(e, index); };
+        card.ondragover = function(e) { handleDragOver(e); };
+        card.ondrop = function(e) { handleDrop(e, index); };
+        card.ondragend = function(e) { handleDragEnd(e); };
 
         const coverHtml = item.image 
-          ? `<img src="${item.image}" class="card-img" alt="Capa">`
-          : `<div class="card-icon">${item.emoji || '🌐'}</div>`;
+          ? '<img src="' + item.image + '" class="card-img" alt="Capa">'
+          : '<div class="card-icon">' + (item.emoji || '🌐') + '</div>';
 
         const statusBadge = item.read 
-          ? `<button class="read-badge badge-active" onclick="toggleReadStatus(${index}, event)" title="Marcar como não lido">✅ Lido</button>`
-          : `<button class="read-badge" onclick="toggleReadStatus(${index}, event)" title="Marcar como lido">⚪ Pendente</button>`;
+          ? '<button class="read-badge badge-active" onclick="toggleReadStatus(' + index + ', event)" title="Marcar como não lido">✅ Lido</button>'
+          : '<button class="read-badge" onclick="toggleReadStatus(' + index + ', event)" title="Marcar como lido">⚪ Pendente</button>';
 
-        card.innerHTML = `
-          <div class="card-header-status">
-            ${statusBadge}
-          </div>
-          <a href="${item.url}" target="_blank" class="card-link" onclick="markAsRead(${index})">
-            ${coverHtml}
-            <span class="card-title">${item.title}</span>
-          </a>
-          <div class="card-controls">
-            <button onclick="editShortcut(${index})" title="Editar / Trocar Capa">✏️</button>
-            <button onclick="deleteShortcut(${index})" title="Excluir">🗑️</button>
-          </div>
-        `;
+        card.innerHTML = 
+          '<div class="card-header-status">' + statusBadge + '</div>' +
+          '<a href="' + item.url + '" target="_blank" class="card-link" onclick="markAsRead(' + index + ')">' +
+            coverHtml +
+            '<span class="card-title">' + item.title + '</span>' +
+          '</a>' +
+          '<div class="card-controls">' +
+            '<button onclick="editShortcut(' + index + ')" title="Editar / Trocar Capa">✏️</button>' +
+            '<button onclick="deleteShortcut(' + index + ')" title="Excluir">🗑️</button>' +
+          '</div>';
 
         container.appendChild(card);
       });
@@ -521,7 +513,7 @@
       const emoji = document.getElementById('shortcutEmoji').value;
       const fileInput = document.getElementById('shortcutImage');
 
-      const processSave = (imageData) => {
+      const processSave = function(imageData) {
         const itemData = {
           id: editIdx >= 0 ? shortcuts[editIdx].id : Date.now().toString(),
           title: title,
@@ -544,7 +536,7 @@
       };
 
       if (fileInput.files && fileInput.files[0]) {
-        compressImage(fileInput.files[0], (compressedData) => {
+        compressImage(fileInput.files[0], function(compressedData) {
           processSave(compressedData);
         });
       } else {
@@ -557,4 +549,50 @@
       document.getElementById('editIndex').value = index;
       document.getElementById('shortcutTitle').value = item.title;
       document.getElementById('shortcutUrl').value = item.url;
-      document.getElementById('shortcutCa
+      document.getElementById('shortcutCategory').value = item.category || 'vagas';
+      document.getElementById('shortcutEmoji').value = item.emoji || '';
+      document.getElementById('formTitle').innerText = '✏️ Editar Atalho / Trocar Capa';
+      document.getElementById('saveBtn').innerText = 'Atualizar Atalho';
+      document.getElementById('cancelBtn').classList.remove('hidden');
+      
+      const catPanel = document.getElementById('categoryPanel');
+      const cfgPanel = document.getElementById('configPanel');
+      if (catPanel) catPanel.classList.add('hidden');
+      if (cfgPanel) cfgPanel.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteShortcut(index) {
+      if (confirm('Deseja apagar o atalho "' + shortcuts[index].title + '"?')) {
+        shortcuts.splice(index, 1);
+        saveShortcuts();
+        renderShortcuts();
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('shortcutForm').reset();
+      document.getElementById('editIndex').value = '-1';
+      document.getElementById('formTitle').innerText = '➕ Adicionar / Editar Atalho';
+      document.getElementById('saveBtn').innerText = 'Salvar Atalho';
+      document.getElementById('cancelBtn').classList.add('hidden');
+    }
+
+    function exportBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+        config: appSettings,
+        categories: customCategories,
+        shortcuts: shortcuts
+      }));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "estante_estrategica_backup.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
