@@ -13,7 +13,9 @@ body {
   transition: background-color 0.3s ease;
 }
 
-/* Vídeo do Topo */
+/* ==========================================================================
+   VÍDEO DO TOPO
+   ========================================================================== */
 .video-container {
   width: 100%;
   max-width: 500px;
@@ -56,6 +58,9 @@ body {
   box-shadow: 0 0 10px rgba(0, 179, 126, 0.5);
 }
 
+/* ==========================================================================
+   CABEÇALHO, PROGRESSO E BUSCA
+   ========================================================================== */
 header {
   text-align: center;
   margin-bottom: 20px;
@@ -117,6 +122,41 @@ header p {
   font-size: 0.9rem;
 }
 
+/* ==========================================================================
+   BARRA DE CATEGORIAS (ABAS)
+   ========================================================================== */
+.category-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 0;
+  margin-bottom: 15px;
+  scrollbar-width: none;
+}
+
+.category-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  background-color: #202024;
+  color: #c4c4cc;
+  border: 1px solid #29292e;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background-color: #00b37e;
+  color: #ffffff;
+  border-color: #00b37e;
+  font-weight: bold;
+}
+
 #configBtn {
   background-color: transparent;
   color: #a8a8b3;
@@ -133,7 +173,9 @@ header p {
   color: #fff;
 }
 
-/* Painel de Configurações */
+/* ==========================================================================
+   PAINEL DE CONFIGURAÇÕES E FORMULÁRIO
+   ========================================================================== */
 .config-panel {
   background-color: #202024;
   border: 1px solid #29292e;
@@ -189,7 +231,6 @@ header p {
   margin: 15px 0;
 }
 
-/* Formulário */
 .form-buttons {
   display: flex;
   gap: 10px;
@@ -220,11 +261,13 @@ header p {
   display: none;
 }
 
-/* Cartões da Estante */
+/* ==========================================================================
+   CARTÕES DA ESTANTE (CARDS)
+   ========================================================================== */
 .cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
 }
 
 .card {
@@ -234,16 +277,26 @@ header p {
   flex-direction: column;
   align-items: center;
   position: relative;
-  transition: transform 0.2s, opacity 0.2s;
+  transition: transform 0.2s;
   border: 1px solid #29292e;
+  cursor: grab;
+  user-select: none;
 }
 
-.card:hover {
-  transform: translateY(-2px);
+.card:active {
+  cursor: grabbing;
 }
 
+/* Estilo visual enquanto o cartão é arrastado */
+.card.dragging {
+  opacity: 0.4;
+  border: 2px dashed #00b37e !important;
+}
+
+/* REMOVE O VÉU BRANCO / OPACIDADE DOS CARTÕES LIDOS */
 .card-read {
-  opacity: 0.6;
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 .card-header-status {
@@ -276,15 +329,15 @@ header p {
 }
 
 .card-img {
-  width: 60px;
-  height: 60px;
+  width: 55px;
+  height: 55px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 8px;
 }
 
 .card-icon {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   margin-bottom: 8px;
 }
 
@@ -293,11 +346,12 @@ header p {
   font-weight: bold;
   text-align: center;
   word-break: break-word;
+  line-height: 1.2;
 }
 
 .card-controls {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   margin-top: 10px;
 }
 
@@ -305,9 +359,10 @@ header p {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   opacity: 0.7;
   padding: 2px;
+  transition: opacity 0.2s;
 }
 
 .card-controls button:hover {
