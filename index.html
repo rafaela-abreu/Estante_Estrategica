@@ -37,9 +37,10 @@
       <input type="text" id="searchInput" oninput="filterShortcuts()" placeholder="🔍 Pesquisar atalho...">
     </div>
 
-    <!-- BOTEIS DE AÇÃO NO TOPO -->
+    <!-- BOTÕES DE AÇÃO NO TOPO -->
     <div class="top-actions-bar">
       <button id="addCategoryBtn" class="btn-action" onclick="toggleCategoryPanel()">🏷️ + Categoria</button>
+      <button id="resetAllBtn" class="btn-action" onclick="resetAllReadStatus()">🔄 Zerar Vistos</button>
       <button id="configBtn" class="btn-action" onclick="toggleConfigPanel()">⚙️ Personalizar Estante</button>
     </div>
 
@@ -385,6 +386,14 @@
       renderShortcuts();
     }
 
+    function resetAllReadStatus() {
+      if (confirm("Tem certeza que deseja zerar todos os vistos agora?")) {
+        shortcuts.forEach(item => item.read = false);
+        saveShortcuts();
+        renderShortcuts();
+      }
+    }
+
     function updateProgressBar() {
       const total = shortcuts.length;
       const readCount = shortcuts.filter(s => s.read).length;
@@ -547,36 +556,4 @@
     }
 
     function deleteShortcut(index) {
-      if (confirm(`Deseja apagar o atalho "${shortcuts[index].title}"?`)) {
-        shortcuts.splice(index, 1);
-        saveShortcuts();
-        renderShortcuts();
-      }
-    }
-
-    function resetForm() {
-      document.getElementById('shortcutForm').reset();
-      document.getElementById('editIndex').value = '-1';
-      document.getElementById('formTitle').innerText = '➕ Adicionar / Editar Atalho';
-      document.getElementById('saveBtn').innerText = 'Salvar Atalho';
-      document.getElementById('cancelBtn').classList.add('hidden');
-    }
-
-    function exportBackup() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-        config: appSettings,
-        categories: customCategories,
-        shortcuts: shortcuts
-      }));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "estante_estrategica_backup.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    window.onload = init;
-  </script>
-</body>
-</html>
+      if (confirm(`Deseja apagar o atalho
