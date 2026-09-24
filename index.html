@@ -137,14 +137,7 @@
     let currentCategory = 'todas';
     let draggedIndex = null;
 
-    let appSettings = JSON.parse(localStorage.getItem('estante_config')) || {
-      title: 'Estante Estratégica',
-      bg: '#121214',
-      cardBg: '#202024',
-      borderRadius: '12px'
-    };
-
-    let customCategories = JSON.parse(localStorage.getItem('estante_categories')) || [
+    let defaultCategories = [
       { id: 'vagas', name: 'Vagas', emoji: '💼' },
       { id: 'economia', name: 'Economia & Agro', emoji: '📈' },
       { id: 'noticias', name: 'Notícias', emoji: '🌐' },
@@ -152,12 +145,34 @@
       { id: 'religiao', name: 'Religião', emoji: '🙏' }
     ];
 
-    let shortcuts = JSON.parse(localStorage.getItem('estante_shortcuts')) || [
+    let defaultShortcuts = [
       { id: '1', title: 'PCI Concursos', url: 'https://www.pciconcursos.com.br', image: '', emoji: '📚', read: false, category: 'vagas' },
-      { id: '2', title: 'Wired Tech', url: 'https://www.wired.com', image: '', emoji: '🚀', read: false, category: 'tech' }
+      { id: '2', title: 'Wired Tech', url: 'https://www.wired.com', image: '', emoji: '🚀', read: false, category: 'tech' },
+      { id: '3', title: 'InfoMoney', url: 'https://www.infomoney.com.br', image: '', emoji: '📈', read: false, category: 'economia' },
+      { id: '4', title: 'Notícias Agrícolas', url: 'https://www.noticiasagricolas.com.br', image: '', emoji: '🌾', read: false, category: 'economia' }
     ];
 
+    let appSettings = JSON.parse(localStorage.getItem('estante_config')) || {
+      title: 'Estante Estratégica',
+      bg: '#121214',
+      cardBg: '#202024',
+      borderRadius: '12px'
+    };
+
+    let customCategories = JSON.parse(localStorage.getItem('estante_categories'));
+    if (!customCategories || customCategories.length === 0) {
+      customCategories = defaultCategories;
+      localStorage.setItem('estante_categories', JSON.stringify(customCategories));
+    }
+
+    let shortcuts = JSON.parse(localStorage.getItem('estante_shortcuts'));
+    if (!shortcuts || shortcuts.length === 0) {
+      shortcuts = defaultShortcuts;
+      localStorage.setItem('estante_shortcuts', JSON.stringify(shortcuts));
+    }
+
     function init() {
+      currentCategory = 'todas';
       checkDailyResetAt2AM();
       applySettings();
       renderCategoriesUI();
@@ -542,18 +557,4 @@
       document.getElementById('editIndex').value = index;
       document.getElementById('shortcutTitle').value = item.title;
       document.getElementById('shortcutUrl').value = item.url;
-      document.getElementById('shortcutCategory').value = item.category || 'vagas';
-      document.getElementById('shortcutEmoji').value = item.emoji || '';
-      document.getElementById('formTitle').innerText = '✏️ Editar Atalho / Trocar Capa';
-      document.getElementById('saveBtn').innerText = 'Atualizar Atalho';
-      document.getElementById('cancelBtn').classList.remove('hidden');
-      
-      const catPanel = document.getElementById('categoryPanel');
-      const cfgPanel = document.getElementById('configPanel');
-      if (catPanel) catPanel.classList.add('hidden');
-      if (cfgPanel) cfgPanel.classList.remove('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function deleteShortcut(index) {
-      if (confirm(`Deseja apagar o atalho
+      document.getElementById('shortcutCa
