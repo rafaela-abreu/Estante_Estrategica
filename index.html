@@ -37,10 +37,10 @@
       <input type="text" id="searchInput" oninput="filterShortcuts()" placeholder="🔍 Pesquisar atalho...">
     </div>
 
-    <!-- BOTOES DE AÇÃO NO TOPO -->
+    <!-- BOTEIS DE AÇÃO NO TOPO -->
     <div class="top-actions-bar">
       <button id="addCategoryBtn" class="btn-action" onclick="toggleCategoryPanel()">🏷️ + Categoria</button>
-      <button id="configBtn" class="btn-action" onclick="toggleConfig()">⚙️ Personalizar Estante</button>
+      <button id="configBtn" class="btn-action" onclick="toggleConfigPanel()">⚙️ Personalizar Estante</button>
     </div>
 
     <!-- Barra Dinâmica de Categorias -->
@@ -209,17 +209,24 @@
       document.getElementById('borderRadiusSelect').value = appSettings.borderRadius;
     }
 
-    function toggleConfig() {
-      document.getElementById('categoryPanel').classList.add('hidden');
-      document.getElementById('configPanel').classList.toggle('hidden');
+    function toggleConfigPanel() {
+      const categoryPanel = document.getElementById('categoryPanel');
+      if (categoryPanel) categoryPanel.classList.add('hidden');
+      
+      const configPanel = document.getElementById('configPanel');
+      if (configPanel) configPanel.classList.toggle('hidden');
     }
 
     function toggleCategoryPanel() {
-      document.getElementById('configPanel').classList.add('hidden');
+      const configPanel = document.getElementById('configPanel');
+      if (configPanel) configPanel.classList.add('hidden');
+
       const panel = document.getElementById('categoryPanel');
-      panel.classList.toggle('hidden');
-      if (!panel.classList.contains('hidden')) {
-        renderCategoryManageList();
+      if (panel) {
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) {
+          renderCategoryManageList();
+        }
       }
     }
 
@@ -255,6 +262,7 @@
 
     function renderCategoryManageList() {
       const listContainer = document.getElementById('categoryManageList');
+      if (!listContainer) return;
       listContainer.innerHTML = '';
       
       customCategories.forEach(cat => {
@@ -270,6 +278,7 @@
 
     function renderCategoriesUI() {
       const bar = document.getElementById('categoryBar');
+      if (!bar) return;
       bar.innerHTML = `<button class="tab-btn ${currentCategory === 'todas' ? 'active' : ''}" onclick="setCategoryFilter('todas', this)">Todas</button>`;
 
       customCategories.forEach(cat => {
@@ -283,6 +292,7 @@
 
     function renderCategoryDropdown() {
       const select = document.getElementById('shortcutCategory');
+      if (!select) return;
       select.innerHTML = '';
 
       customCategories.forEach(cat => {
@@ -380,8 +390,11 @@
       const readCount = shortcuts.filter(s => s.read).length;
       const percentage = total > 0 ? Math.round((readCount / total) * 100) : 0;
 
-      document.getElementById('progressText').innerText = `Leituras de hoje: ${readCount} / ${total} (${percentage}%)`;
-      document.getElementById('progressFill').style.width = `${percentage}%`;
+      const progressText = document.getElementById('progressText');
+      const progressFill = document.getElementById('progressFill');
+
+      if (progressText) progressText.innerText = `Leituras de hoje: ${readCount} / ${total} (${percentage}%)`;
+      if (progressFill) progressFill.style.width = `${percentage}%`;
     }
 
     function setCategoryFilter(category, btnElement) {
@@ -393,7 +406,8 @@
     }
 
     function filterShortcuts() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
+      const searchInput = document.getElementById('searchInput');
+      const query = searchInput ? searchInput.value.toLowerCase() : '';
       renderShortcuts(query);
     }
 
@@ -426,6 +440,7 @@
 
     function renderShortcuts(filterText = '') {
       const container = document.getElementById('cardsContainer');
+      if (!container) return;
       container.innerHTML = '';
 
       shortcuts.forEach((item, index) => {
@@ -524,8 +539,10 @@
       document.getElementById('saveBtn').innerText = 'Atualizar Atalho';
       document.getElementById('cancelBtn').classList.remove('hidden');
       
-      document.getElementById('categoryPanel').classList.add('hidden');
-      document.getElementById('configPanel').classList.remove('hidden');
+      const catPanel = document.getElementById('categoryPanel');
+      const cfgPanel = document.getElementById('configPanel');
+      if (catPanel) catPanel.classList.add('hidden');
+      if (cfgPanel) cfgPanel.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -554,4 +571,12 @@
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", "estante_estrategica_backup.json");
-      document.body.app
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
