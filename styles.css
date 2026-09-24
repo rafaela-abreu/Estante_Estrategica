@@ -123,6 +123,34 @@ header p {
 }
 
 /* ==========================================================================
+   BOTÕES DE AÇÃO NO TOPO (CATEGORIA & CONFIGURAR)
+   ========================================================================== */
+.top-actions-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  background-color: #202024;
+  color: #00b37e;
+  border: 1px solid #00b37e;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  background-color: #00b37e;
+  color: #ffffff;
+}
+
+/* ==========================================================================
    BARRA DE CATEGORIAS (ABAS)
    ========================================================================== */
 .category-bar {
@@ -157,24 +185,8 @@ header p {
   font-weight: bold;
 }
 
-#configBtn {
-  background-color: transparent;
-  color: #a8a8b3;
-  border: 1px solid #29292e;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s;
-}
-
-#configBtn:hover {
-  background-color: #202024;
-  color: #fff;
-}
-
 /* ==========================================================================
-   PAINEL DE CONFIGURAÇÕES E FORMULÁRIO
+   PAINÉIS DE CONFIGURAÇÕES E CATEGORIAS
    ========================================================================== */
 .config-panel {
   background-color: #202024;
@@ -192,6 +204,13 @@ header p {
   font-size: 1.1rem;
   color: #00b37e;
   margin-bottom: 12px;
+}
+
+.config-panel h4 {
+  font-size: 0.95rem;
+  color: #a8a8b3;
+  margin-top: 10px;
+  margin-bottom: 8px;
 }
 
 .config-group {
@@ -222,6 +241,12 @@ header p {
   height: 30px;
   cursor: pointer;
   background: transparent;
+}
+
+.category-manage-list {
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 10px;
 }
 
 .divider {
@@ -255,6 +280,7 @@ header p {
   padding: 10px 15px;
   border-radius: 4px;
   cursor: pointer;
+  width: 100%;
 }
 
 .btn-secondary.hidden {
